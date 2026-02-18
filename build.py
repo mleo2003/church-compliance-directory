@@ -219,12 +219,22 @@ def render_page(title, description, body_html, out_path):
     out_path.write_text(html, encoding="utf-8")
     print(f"  wrote {out_path.name}")
 
+def linkify(html):
+    """Convert bare https?:// URLs in HTML text nodes to clickable <a> links."""
+    # Match URLs not already inside href="..." or src="..."
+    return re.sub(
+        r'(?<!href=")(?<!href=\')(?<!src=")(?<!src=\')(https?://[^\s<>"\')\]]+)',
+        r'<a href="\1" target="_blank" rel="noopener">\1</a>',
+        html,
+    )
+
 def convert_md(src_path):
     md_parser.reset()
     text = src_path.read_text(encoding="utf-8")
     # Strip YAML frontmatter
     text = re.sub(r"^---\n.*?\n---\n", "", text, flags=re.DOTALL)
-    return md_parser.convert(text)
+    html = md_parser.convert(text)
+    return linkify(html)
 
 # Ensure output dirs exist
 (OUT / "states").mkdir(parents=True, exist_ok=True)
