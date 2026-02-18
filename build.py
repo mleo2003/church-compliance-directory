@@ -6,7 +6,7 @@ import re
 import shutil
 from pathlib import Path
 
-SRC = Path("/data/vault/projects/compliance-calendar/content")
+SRC = Path("/data/vault/projects/compliance-tracker/content")
 OUT = Path("/tmp/cc-directory/docs")
 
 CSS = """
@@ -141,32 +141,73 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <span class="brand">Church<span>Compliance</span>.guide</span>
   <a href="/index.html">Directory</a>
   <div class="spacer"></div>
-  <a class="cta" href="https://compliancecalendar.app">Get Compliance Calendar →</a>
+  <a class="cta" href="https://compliancecalendar.app">Get Compliance Tracker \u2192</a>
 </nav>
 <div class="container">
 {body}
 </div>
 <footer>
-  <p>Church Compliance Directory — a free resource by <a href="https://compliancecalendar.app">Compliance Calendar</a></p>
+  <p>Church Compliance Directory \u2014 a free resource by <a href="https://compliancecalendar.app">Compliance Tracker</a></p>
   <p style="margin-top:0.4rem">Not legal or tax advice. Links point to official government agency pages. Last updated Feb 2026.</p>
 </footer>
 </body>
 </html>"""
 
+# (url_slug, display_name, meta_description)
 STATE_PAGES = [
-    ("church-compliance-deadlines-california-2026-draft.md",  "california",     "California", "State filings, EDD payroll, AB 506 volunteer screening for CA churches."),
-    ("church-compliance-deadlines-texas-2026-draft.md",       "texas",          "Texas",       "SOS entity maintenance, franchise tax, payroll for TX churches."),
-    ("church-compliance-deadlines-florida-2026-draft.md",     "florida",        "Florida",     "Annual report deadline, reemployment tax for FL churches."),
-    ("church-compliance-deadlines-georgia-2026-draft.md",     "georgia",        "Georgia",     "Annual registration, DOL payroll, charities renewal for GA churches."),
-    ("church-compliance-deadlines-ohio-2026-draft.md",        "ohio",           "Ohio",        "5-year SOS renewal, AG annual report, ODJFS quarterly for OH churches."),
-    ("church-compliance-deadlines-new-york-2026-draft.md",    "new-york",       "New York",    "CHAR500, DOS financial disclosure, DOL unemployment for NY churches."),
-    ("church-compliance-deadlines-north-carolina-2026-draft.md","north-carolina","North Carolina","Charitable solicitation license, UI exemption for NC churches."),
-    ("church-compliance-deadlines-pennsylvania-2026-draft.md","pennsylvania",   "Pennsylvania","Annual report, Act 153 three-clearance requirement for PA churches."),
-    ("church-compliance-deadlines-illinois-2026-draft.md",    "illinois",       "Illinois",    "NFP annual report, DCFS Mandated Reporter training for IL churches."),
-    ("church-compliance-deadlines-michigan-2026-draft.md",    "michigan",       "Michigan",    "LARA annual report (Oct 1), UIA exemption for MI churches."),
+    ("alabama",        "Alabama",         "SOS nonprofit filings, ALDOR withholding, DOL UI for AL churches."),
+    ("alaska",         "Alaska",          "CBPL biennial report, no state income tax, DOL UI for AK churches."),
+    ("arizona",        "Arizona",         "ACC annual report, ADOR withholding, DES unemployment for AZ churches."),
+    ("arkansas",       "Arkansas",        "SOS annual report, DFA withholding, DWS UI for AR churches."),
+    ("california",     "California",      "State filings, EDD payroll, AB 506 volunteer screening for CA churches."),
+    ("colorado",       "Colorado",        "SOS periodic report, DOR withholding, CDLE/FAMLI for CO churches."),
+    ("connecticut",    "Connecticut",     "SOTS annual report, DCP charity registration, CT Paid Leave for CT churches."),
+    ("delaware",       "Delaware",        "Division of Corporations annual report, DOR withholding for DE churches."),
+    ("florida",        "Florida",         "Annual report deadline, reemployment tax for FL churches."),
+    ("georgia",        "Georgia",         "Annual registration, DOL payroll, charities renewal for GA churches."),
+    ("hawaii",         "Hawaii",          "DCCA annual report, TDI/PHCA obligations, DLIR UI for HI churches."),
+    ("idaho",          "Idaho",           "SOS annual report, STC withholding, IDOL UI for ID churches."),
+    ("illinois",       "Illinois",        "NFP annual report, DCFS Mandated Reporter training for IL churches."),
+    ("indiana",        "Indiana",         "INBiz biennial report, DOR withholding, county income tax for IN churches."),
+    ("iowa",           "Iowa",            "SOS biennial report, Iowa DOR withholding, IWD UI for IA churches."),
+    ("kansas",         "Kansas",          "SOS annual report, KDOR withholding, DOL UI for KS churches."),
+    ("kentucky",       "Kentucky",        "SOS annual report, DOR withholding, local occupational tax for KY churches."),
+    ("louisiana",      "Louisiana",       "SOS annual report, LDR withholding, LWC UI for LA churches."),
+    ("maine",          "Maine",           "SOS annual report, MRS withholding, DOL UI reimbursement for ME churches."),
+    ("maryland",       "Maryland",        "SDAT annual report, Comptroller withholding, county payroll tax for MD churches."),
+    ("massachusetts",  "Massachusetts",   "SOC/AG dual reporting, PFML obligations, DUA UI for MA churches."),
+    ("michigan",       "Michigan",        "LARA annual report, UIA exemption election for MI churches."),
+    ("minnesota",      "Minnesota",       "SOS annual renewal, MN Paid Leave (2026), DEED UI for MN churches."),
+    ("mississippi",    "Mississippi",     "SOS annual report, MDOR withholding, MDES UI for MS churches."),
+    ("missouri",       "Missouri",        "No standard annual report, registered agent maintenance for MO churches."),
+    ("montana",        "Montana",         "SOS annual report (April 15), DOR withholding, DLI UI for MT churches."),
+    ("nebraska",       "Nebraska",        "SOS biennial report, DOR withholding, DOL UI for NE churches."),
+    ("nevada",         "Nevada",          "SilverFlume annual list, no income tax but MBT, DETR UI for NV churches."),
+    ("new-hampshire",  "New Hampshire",   "SOS annual report, AG Charitable Trusts, no income tax for NH churches."),
+    ("new-jersey",     "New Jersey",      "SOS annual report, four payroll obligations (withholding/UI/SDI/FLI) for NJ churches."),
+    ("new-mexico",     "New Mexico",      "SOS biennial report, GRT nuance, DWS UI for NM churches."),
+    ("new-york",       "New York",        "CHAR500, DOS financial disclosure, DOL unemployment for NY churches."),
+    ("north-carolina", "North Carolina",  "Charitable solicitation license, UI exemption for NC churches."),
+    ("north-dakota",   "North Dakota",    "SOS annual report (Aug 1), Tax Commissioner withholding for ND churches."),
+    ("ohio",           "Ohio",            "5-year SOS renewal, AG annual report, ODJFS quarterly for OH churches."),
+    ("oklahoma",       "Oklahoma",        "SOS annual report (July 1), Tax Commission withholding for OK churches."),
+    ("oregon",         "Oregon",          "SOS annual report, DOJ charity registration, OR Paid Leave for OR churches."),
+    ("pennsylvania",   "Pennsylvania",    "Annual report, Act 153 three-clearance requirement for PA churches."),
+    ("rhode-island",   "Rhode Island",    "SOS annual report, AG charity registration, TDI/TCI for RI churches."),
+    ("south-carolina", "South Carolina",  "SOS annual report, SCDOR withholding, DEW UI for SC churches."),
+    ("south-dakota",   "South Dakota",    "SOS annual report, no state income tax, DLR UI for SD churches."),
+    ("tennessee",      "Tennessee",       "SOS annual report, no income tax, DOL UI for TN churches."),
+    ("texas",          "Texas",           "SOS entity maintenance, franchise tax, payroll for TX churches."),
+    ("utah",           "Utah",            "DCED annual report, TAC withholding, DWS UI for UT churches."),
+    ("vermont",        "Vermont",         "SOS annual report, DFR charity registration, DET UI for VT churches."),
+    ("virginia",       "Virginia",        "SCC annual report, Tax Dept withholding, VEC UI for VA churches."),
+    ("washington",     "Washington",      "SOS annual report, no income tax, L&I/ESD/PFML for WA churches."),
+    ("west-virginia",  "West Virginia",   "SOS annual report, Tax Dept withholding, BRT UI for WV churches."),
+    ("wisconsin",      "Wisconsin",       "DFI annual report, DOR withholding, AG charity registration for WI churches."),
+    ("wyoming",        "Wyoming",         "SOS annual report, no state income tax, DWS UI for WY churches."),
 ]
 
-md = markdown.Markdown(extensions=["tables", "fenced_code"])
+md_parser = markdown.Markdown(extensions=["tables", "fenced_code"])
 
 def render_page(title, description, body_html, out_path):
     html = HTML_TEMPLATE.format(
@@ -176,43 +217,49 @@ def render_page(title, description, body_html, out_path):
         body=body_html,
     )
     out_path.write_text(html, encoding="utf-8")
-    print(f"  wrote {out_path}")
+    print(f"  wrote {out_path.name}")
 
 def convert_md(src_path):
-    md.reset()
+    md_parser.reset()
     text = src_path.read_text(encoding="utf-8")
     # Strip YAML frontmatter
     text = re.sub(r"^---\n.*?\n---\n", "", text, flags=re.DOTALL)
-    return md.convert(text)
+    return md_parser.convert(text)
+
+# Ensure output dirs exist
+(OUT / "states").mkdir(parents=True, exist_ok=True)
 
 # Build state pages
-for src_file, slug, state_name, description in STATE_PAGES:
-    src = SRC / src_file
+built = 0
+missing = []
+for slug, state_name, description in STATE_PAGES:
+    src = SRC / f"church-compliance-deadlines-{slug}-2026-draft.md"
     if not src.exists():
-        print(f"  MISSING: {src_file}")
+        print(f"  MISSING: {src.name}")
+        missing.append(slug)
         continue
     body = convert_md(src)
-    # Wrap Sources section
     body = body.replace('<h2>Sources</h2>', '<div class="sources"><h2>Sources</h2>')
     body += '</div>'
     out = OUT / "states" / f"{slug}.html"
-    render_page(f"Church Compliance — {state_name}", description, body, out)
+    render_page(f"Church Compliance \u2014 {state_name}", description, body, out)
+    built += 1
+
+print(f"\nBuilt {built} state pages. Missing: {missing or 'none'}")
 
 # Build index
 index_src = SRC / "church-compliance-directory-index.md"
 index_body = convert_md(index_src)
 
-# Replace the markdown table of states with a card grid
 state_cards = '\n<div class="state-grid">\n'
-for _, slug, state_name, desc in STATE_PAGES:
+for slug, state_name, desc in STATE_PAGES:
     state_cards += f'''<div class="state-card">
   <h3>{state_name}</h3>
   <p>{desc}</p>
-  <a href="states/{slug}.html">View {state_name} guide →</a>
+  <a href="states/{slug}.html">View {state_name} guide \u2192</a>
 </div>\n'''
 state_cards += '</div>\n'
 
-# Replace the big markdown table with the card grid
 index_body = re.sub(
     r'<table>.*?</table>',
     state_cards,
@@ -223,11 +270,10 @@ index_body = re.sub(
 
 render_page(
     "Church Compliance Directory",
-    "State-by-state compliance guides for churches — official government links, no legal advice.",
+    "State-by-state compliance guides for churches \u2014 official government links, no legal advice.",
     index_body,
     OUT / "index.html"
 )
 
-# Copy a minimal _config.yml for GitHub Pages
 (OUT.parent / "_config.yml").write_text("theme: null\n")
-print("\nBuild complete.")
+print("Build complete.")
